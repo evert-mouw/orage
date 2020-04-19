@@ -729,7 +729,10 @@ static void fill_days(day_win *dw, gint days)
     GtkWidget *marker;
 
     height = dw->StartDate_button_req.height;
-    width = dw->StartDate_button_req.width;
+    width = g_par.dw_size_x / days;
+    if ( dw->StartDate_button_req.width > width ) {
+        width = dw->StartDate_button_req.width;
+    }
 
     /* first clear the structure */
     for (col = 1; col <  days+1; col++) {
@@ -949,6 +952,7 @@ static void build_day_view_table(day_win *dw)
     int year, month, day;
     gint i, sunday;
     GtkWidget *label, *button;
+    int DayButtonMaxWidth;
     char text[5+1], *date, *today;
     struct tm tm_date;
     gint monthdays[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
@@ -1000,7 +1004,11 @@ static void build_day_view_table(day_win *dw)
             label = gtk_bin_get_child(GTK_BIN(button));
             gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &dw->fg_sunday);
         }
-        gtk_widget_set_size_request(button, dw->StartDate_button_req.width, -1);
+        DayButtonMaxWidth = g_par.dw_size_x / days;
+        if ( dw->StartDate_button_req.width > DayButtonMaxWidth ) {
+            DayButtonMaxWidth = dw->StartDate_button_req.width;
+        }
+        gtk_widget_set_size_request(button, DayButtonMaxWidth, -1);
         g_signal_connect((gpointer)button, "clicked"
                 , G_CALLBACK(header_button_clicked_cb), dw);
         gtk_table_attach(GTK_TABLE(dw->dtable_h), button, i, i+1, 0, 1
@@ -1048,6 +1056,9 @@ static void build_day_view_table(day_win *dw)
 
 void refresh_day_win(day_win *dw)
 {
+    gtk_window_get_size(GTK_WINDOW(dw->Window)
+        , &g_par.dw_size_x, &g_par.dw_size_y);
+
     get_scroll_position(dw);
     gtk_widget_destroy(dw->scroll_win_h);
     build_day_view_table(dw);
